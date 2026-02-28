@@ -1,4 +1,5 @@
 #pragma once
+#include "4J_Render.h"
 
 class Renderer
 {
@@ -16,5 +17,8 @@ public:
 
 	};
 
-
+	static DWORD tlsIdx;
 };
+
+// Singleton
+extern Renderer InternalRenderManager;
