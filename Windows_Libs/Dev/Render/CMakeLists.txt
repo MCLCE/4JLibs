@@ -26,3 +26,8 @@ add_subdirectory(libpng)
 target_link_libraries(${PROJECT_NAME} PRIVATE
     4JLibs.Windows.Render.libpng
 )
+
+set_target_properties(${PROJECT_NAME} PROPERTIES
+	PREFIX ""
+	OUTPUT_NAME "4J_Render"
+)

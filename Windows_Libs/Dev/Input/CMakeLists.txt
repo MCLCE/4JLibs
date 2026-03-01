@@ -19,3 +19,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 target_precompile_headers(${PROJECT_NAME} PRIVATE
     stdafx.h
 )
+
+set_target_properties(${PROJECT_NAME} PROPERTIES
+	PREFIX ""
+	OUTPUT_NAME "4J_Input"
+)
