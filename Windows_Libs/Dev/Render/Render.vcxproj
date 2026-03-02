@@ -43,7 +43,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v110</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -124,6 +124,8 @@
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalIncludeDirectories>libpng\;zlib\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
     </ClCompile>
     <Link>
       <SubSystem>

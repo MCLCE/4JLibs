@@ -704,7 +704,7 @@ void Renderer::UpdateGamma(unsigned short) {}
 
 Renderer::Context &Renderer::getContext()
 {
-    return *static_cast<Renderer::Context *>(TlsGetValue(Renderer::tlsIdx));
+    return *reinterpret_cast<Renderer::Context *>(TlsGetValue(Renderer::tlsIdx));
 }
 
 void Renderer::CaptureThumbnail(ImageFileBuffer *pngOut)
