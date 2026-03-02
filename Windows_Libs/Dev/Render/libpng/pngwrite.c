@@ -1566,7 +1566,8 @@ png_write_png(png_structrp png_ptr, png_inforp info_ptr,
 #ifdef PNG_STDIO_SUPPORTED /* currently required for png_image_write_* */
 /* Initialize the write structure - general purpose utility. */
 static int
-png_image_write_init(png_imagep image)
+// 4j studios: callback support
+png_image_write_init(png_imagep image, /*begin 4j change*/ png_rw_ptr write_fn, png_flush_ptr flush_fn /*end 4j change*/)
 {
    png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, image,
           png_safe_error, png_safe_warning);
@@ -1574,6 +1575,11 @@ png_image_write_init(png_imagep image)
    if (png_ptr != NULL)
    {
       png_infop info_ptr = png_create_info_struct(png_ptr);
+
+      /*begin 4j change*/
+      if (write_fn != NULL)
+         png_set_write_fn(png_ptr, NULL, write_fn, flush_fn);
+      /*end 4j change*/
 
       if (info_ptr != NULL)
       {
