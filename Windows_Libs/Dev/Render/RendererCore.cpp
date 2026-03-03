@@ -29,7 +29,7 @@ SOFTWARE.
 Renderer InternalRenderManager;
 
 DWORD Renderer::tlsIdx = TlsAlloc();
-_RTL_CRITICAL_SECTION Renderer::totalAllocCS;
+_RTL_CRITICAL_SECTION Renderer::totalAllocCS = {};
 
 DWORD Renderer::s_auiWidths[]  = { 1920, 512, 256, 128, 64, 0 };
 DWORD Renderer::s_auiHeights[] = { 1080, 512, 256, 128, 64 };
@@ -540,6 +540,8 @@ void Renderer::Initialise(ID3D11Device *pDevice, IDXGISwapChain *pSwapChain)
     fanIndexData.pSysMem = fanIndices;
     m_pDevice->CreateBuffer(&fanIndexDesc, &fanIndexData, &fanIndexBuffer);
     delete[] fanIndices;
+
+    InitializeCriticalSection(&Renderer::totalAllocCS);
 }
 
 ID3D11DeviceContext *Renderer::InitialiseContext(bool fromPresent)
