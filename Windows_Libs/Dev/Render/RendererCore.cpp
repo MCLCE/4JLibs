@@ -687,11 +687,13 @@ void Renderer::Initialise(ID3D11Device *pDevice, IDXGISwapChain *pSwapChain)
     m_pDeviceContext->OMGetRenderTargets(1, &renderTargetView, &depthStencilView);
 
     D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+    std::memset(&rtvDesc, 0, sizeof(rtvDesc));
     rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
     rtvDesc.Texture2D.MipSlice = 0;
 
     D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    std::memset(&srvDesc, 0, sizeof(srvDesc));
     srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
     srvDesc.Texture2D.MostDetailedMip = 0;

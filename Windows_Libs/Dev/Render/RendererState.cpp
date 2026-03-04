@@ -665,7 +665,7 @@ void Renderer::UpdateLightingState()
     const std::size_t lightingBytes = sizeof(c.lightDirection) + sizeof(c.lightColour) + sizeof(c.lightAmbientColour);
     D3D11_MAPPED_SUBRESOURCE mapped = {};
     c.m_pDeviceContext->Map(c.m_lightingStateBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
-    std::memcpy(mapped.pData, c.lightDirection, lightingBytes);
+    std::memmove(mapped.pData, c.lightDirection, lightingBytes);
     c.m_pDeviceContext->Unmap(c.m_lightingStateBuffer, 0);
 
     c.lightingDirty = false;
