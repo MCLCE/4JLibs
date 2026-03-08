@@ -49,6 +49,7 @@ C4JStorage::EMessageResult C4JStorage::GetMessageBoxResult()
 
 bool C4JStorage::SetSaveDevice(int (*Func)(LPVOID, const bool), LPVOID lpParam, bool bForceResetOfSaveDevice)
 {
+    // @Patoke: majorly used in XUI
     return true;
 }
 
@@ -65,6 +66,7 @@ void C4JStorage::ResetSaveData()
 
 void C4JStorage::SetDefaultSaveNameForKeyboardDisplay(LPCWSTR pwchDefaultSaveName)
 {
+    // @Patoke: unused for all platforms
     ;
 }
 
@@ -90,6 +92,7 @@ void C4JStorage::SetSaveUniqueFilename(char *szFilename)
 
 void C4JStorage::SetState(ESaveGameControlState eControlState, int (*Func)(LPVOID, const bool), LPVOID lpParam)
 {
+    // @Patoke: only used in the xbox 360 platform
     ;
 }
 
@@ -130,32 +133,38 @@ C4JStorage::ESaveGameState C4JStorage::SaveSaveData(int (*Func)(LPVOID, const bo
 
 void C4JStorage::CopySaveDataToNewSave(PBYTE pbThumbnail, DWORD cbThumbnail, WCHAR *wchNewName, int (*Func)(LPVOID lpParam, bool), LPVOID lpParam)
 {
+    // @Patoke: unused for other platforms that aren't the xbox 360
     ;
 }
 
 void C4JStorage::SetSaveDeviceSelected(unsigned int uiPad, bool bSelected)
 {
+    // @Patoke: majorly used in XUI
     ;
 }
 
 bool C4JStorage::GetSaveDeviceSelected(unsigned int iPad)
 {
+    // @Patoke: majorly used in XUI
     return true;
 }
 
 C4JStorage::ESaveGameState C4JStorage::DoesSaveExist(bool *pbExists)
 {
+    // @Patoke: implementation is stubbed out in other platforms too
     *pbExists = true;
     return ESaveGame_Idle;
 }
 
 bool C4JStorage::EnoughSpaceForAMinSaveGame()
 {
+    // @Patoke: implementation is stubbed out in other platforms too
     return true;
 }
 
 void C4JStorage::SetSaveMessageVPosition(float fY)
 {
+    // @Patoke: completely unused
     ;
 }
 
@@ -183,11 +192,13 @@ C4JStorage::ESaveGameState C4JStorage::LoadSaveDataThumbnail(PSAVE_INFO pSaveInf
 
 void C4JStorage::GetSaveCacheFileInfo(DWORD dwFile, XCONTENT_DATA &xContentData)
 {
+    // @Patoke: xbox 360 leftover
     ;
 }
 
 void C4JStorage::GetSaveCacheFileInfo(DWORD dwFile, PBYTE *ppbImageData, DWORD *pdwImageBytes)
 {
+    // @Patoke: xbox 360 leftover
     ;
 }
 
@@ -203,6 +214,7 @@ C4JStorage::ESaveGameState C4JStorage::DeleteSaveData(PSAVE_INFO pSaveInfo, int 
 
 void C4JStorage::RegisterMarketplaceCountsCallback(int (*Func)(LPVOID lpParam, C4JStorage::DLC_TMS_DETAILS *, int), LPVOID lpParam)
 {
+    // @Patoke: only used in the xbox 360 platform
     ;
 }
 

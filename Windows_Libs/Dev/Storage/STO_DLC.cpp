@@ -208,11 +208,11 @@ std::string CDLC::GetMountedPath(std::string szMount)
         if (szMount[ch] == ':')
         {
             std::string driveName = szMount.substr(0, ch);
-            for (int i = 0; i < m_vDLCDriveMappings.size(); ++i)
+            for (int i = 0; i < m_vDLCDriveMappings.size(); i++)
             {
-                if (m_vDLCDriveMappings[i].m_szDirectoryPath == driveName)
+                if (m_vDLCDriveMappings[i].m_szMountPath == driveName)
                 {
-                    std::string newPath = m_vDLCDriveMappings[i].m_szMountPath;
+                    std::string newPath = m_vDLCDriveMappings[i].m_szDirectoryPath;
 
                     newPath.append(szMount.substr(ch + 1, -1));
 
@@ -256,7 +256,7 @@ void CDLC::Tick(void)
     if (m_iHasNewMountedDLCs)
     {
         m_iHasNewMountedDLCs = false;
-        m_pMountedDLCFunc(m_pMountedDLCParam, 0, 0, dword94);
+        m_pMountedDLCFunc(m_pMountedDLCParam, 0, 0, m_dwLicenseMask);
     }
 }
 

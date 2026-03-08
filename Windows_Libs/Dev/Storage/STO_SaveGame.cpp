@@ -115,7 +115,7 @@ C4JStorage::ESaveGameState CSaveGame::GetSavesInfo(int iPad, int (*Func)(LPVOID 
     if (resultCount > 0)
     {
         m_pSaveDetails->SaveInfoA = new SAVE_INFO[resultCount];
-        memset(m_pSaveDetails->SaveInfoA, 0, 184LL * resultCount);
+        memset(m_pSaveDetails->SaveInfoA, 0, sizeof(SAVE_INFO) * resultCount);
 
         m_pSaveDetails->iSaveC = 0;
         int i = 0;
@@ -128,16 +128,45 @@ C4JStorage::ESaveGameState CSaveGame::GetSavesInfo(int iPad, int (*Func)(LPVOID 
                     strcmp(findFileData.cFileName, ".."))
                 {
                     strcpy_s(m_pSaveDetails->SaveInfoA[i].UTF8SaveFilename, findFileData.cFileName);
-                    strcpy_s(m_pSaveDetails->SaveInfoA[i].UTF8SaveTitle, findFileData.cFileName);
+
+                    // @Patoke add: we want to preserve the title name, so we save this in the actual save file name
+                    char searchPath[280];
+                    sprintf(searchPath, "%s\\Windows64\\GameHDD\\%s\\*", dirName, findFileData.cFileName);
+
+                    WIN32_FIND_DATAA saveFileData;
+                    HANDLE hSaveFile = FindFirstFileA(searchPath, &saveFileData);
+
+                    char szTitleName[256] = {0};
+
+                    if (hSaveFile != INVALID_HANDLE_VALUE)
+                    {
+                        do
+                        {
+                            // @Patoke todo: we assume the first actual file here to be the save file, ideally we would want to check the extension
+                            // too but this is good enough for now
+                            if (!(saveFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+                            {
+                                strcpy_s(szTitleName, sizeof(szTitleName), saveFileData.cFileName);
+                                strcpy_s(this->m_szSaveTitle, saveFileData.cFileName); // populate the save title
+                                break;
+                            }
+                        } while (FindNextFileA(hSaveFile, &saveFileData));
+
+                        FindClose(hSaveFile);
+                    }
+
+                    // set the actual save file name as the title now, before we would use the folder name which is the unique save name
+                    strcpy_s(m_pSaveDetails->SaveInfoA[i].UTF8SaveTitle, szTitleName);
 
                     char fileName[280];
-                    sprintf(fileName, "%s\\Windows64\\GameHDD\\%s\\saveData.ms", dirName, findFileData.cFileName);
+                    sprintf(fileName, "%s\\Windows64\\GameHDD\\%s\\%s", dirName, findFileData.cFileName, szTitleName);
 
                     GetFileAttributesExA(fileName, GetFileExInfoStandard, &fileInfoBuffer);
                     m_pSaveDetails->SaveInfoA[i].metaData.dataSize = fileInfoBuffer.nFileSizeLow;
 
+                    // @Patoke todo: a save can have multiple thumbnails, implement this behaviour
                     char thumbName[280];
-                    sprintf(thumbName, "%s\\Windows64\\GameHDD\\%s\\thumbData.png", dirName, findFileData.cFileName);
+                    sprintf(thumbName, "%s\\Windows64\\GameHDD\\%s\\thumbnails\\thumbData.png", dirName, findFileData.cFileName);
 
                     GetFileAttributesExA(thumbName, GetFileExInfoStandard, &fileInfoBuffer);
                     m_pSaveDetails->SaveInfoA[i++].metaData.thumbnailSize = fileInfoBuffer.nFileSizeLow;
@@ -200,7 +229,7 @@ C4JStorage::ESaveGameState CSaveGame::LoadSaveDataThumbnail(PSAVE_INFO pSaveInfo
         const char *saveName = (const char *)pSaveInfo;
 
         char thumbPath[512];
-        sprintf(thumbPath, "%s/Windows64/GameHDD/%s/thumbData.ms", curDir, saveName);
+        sprintf(thumbPath, "%s/Windows64/GameHDD/%s/thumbnails/thumbData.png", curDir, saveName);
 
         HANDLE hThumb = CreateFileA(thumbPath, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 
@@ -230,6 +259,8 @@ C4JStorage::ESaveGameState CSaveGame::LoadSaveData(PSAVE_INFO pSaveInfo, int (*F
 {
     SetSaveUniqueFilename(pSaveInfo->UTF8SaveFilename);
 
+    memcpy(this->m_szSaveTitle, pSaveInfo->UTF8SaveTitle, sizeof(this->m_szSaveTitle)); // @Patoke add
+
     if (m_pSaveData)
     {
         free(m_pSaveData);
@@ -244,7 +275,7 @@ C4JStorage::ESaveGameState CSaveGame::LoadSaveData(PSAVE_INFO pSaveInfo, int (*F
     GetCurrentDirectoryA(sizeof(curDir), curDir);
     sprintf(dirName, "%s/Windows64/GameHDD/%s", curDir, m_szSaveUniqueName);
     CreateDirectoryA(dirName, 0);
-    sprintf(fileName, "%s/saveData.ms", dirName);
+    sprintf(fileName, "%s/%s", dirName, this->m_szSaveTitle); // @Patoke add
 
     HANDLE h = CreateFileA(fileName, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 
@@ -320,7 +351,7 @@ bool CSaveGame::GetSaveUniqueFilename(char *pszName)
 void CSaveGame::SetSaveTitle(LPCWSTR pwchDefaultSaveName)
 {
     CreateSaveUniqueName();
-    memmove(m_szSaveTitle, pwchDefaultSaveName, sizeof(m_szSaveTitle));
+    sprintf(m_szSaveTitle, "%S", pwchDefaultSaveName); // @Patoke add
 }
 
 PVOID CSaveGame::AllocateSaveData(unsigned int uiBytes)
@@ -365,8 +396,7 @@ void CSaveGame::SetSaveImages(PBYTE pbThumbnail, DWORD dwThumbnailBytes, PBYTE p
     // inject text metadata into the thumbnail if it exists
     if (dwTextDataBytes > 0)
     {
-        this->AddTextFieldToPNG(reinterpret_cast<unsigned __int8 *>(this->m_pbThumbnailData), dwThumbnailBytes, pbTextData, dwTextDataBytes,
-                                dwNewThumbnailBytes);
+        this->AddTextFieldToPNG(this->m_pbThumbnailData, dwThumbnailBytes, pbTextData, dwTextDataBytes, dwNewThumbnailBytes);
     }
 }
 
@@ -460,7 +490,7 @@ C4JStorage::ESaveGameState CSaveGame::SaveSaveData(int (*Func)(LPVOID, const boo
     GetCurrentDirectoryA(sizeof(curDir), curDir);
     sprintf(dirName, "%s/Windows64/GameHDD/%s", curDir, m_szSaveUniqueName);
     CreateDirectoryA(dirName, 0);
-    sprintf(fileName, "%s/saveData.ms", dirName);
+    sprintf(fileName, "%s/%s", dirName, this->m_szSaveTitle); // @Patoke add
 
     HANDLE h = CreateFileA(fileName, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
 
@@ -473,7 +503,11 @@ C4JStorage::ESaveGameState CSaveGame::SaveSaveData(int (*Func)(LPVOID, const boo
     // @Patoke add
     if (this->m_pbThumbnailData != nullptr && this->m_uiThumbnailSize > 0)
     {
-        sprintf(thumbName, "%s/thumbData.png", dirName);
+        char thumbDir[280];
+        sprintf(thumbDir, "%s/thumbnails", dirName);
+        CreateDirectoryA(thumbDir, 0);
+
+        sprintf(thumbName, "%s/thumbnails/thumbData.png", dirName);
 
         HANDLE hThumb = CreateFileA(thumbName, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
 
@@ -489,8 +523,43 @@ C4JStorage::ESaveGameState CSaveGame::SaveSaveData(int (*Func)(LPVOID, const boo
     return C4JStorage::ESaveGame_Idle;
 }
 
+// @Patoke add
 C4JStorage::ESaveGameState CSaveGame::DeleteSaveData(PSAVE_INFO pSaveInfo, int (*Func)(LPVOID lpParam, const bool), LPVOID lpParam)
 {
+    char dirName[256];
+    char curDir[256];
+    char fileName[280];
+    char thumbName[280];
+
+    GetCurrentDirectoryA(sizeof(curDir), curDir);
+
+    sprintf(dirName, "%s/Windows64/GameHDD/%s", curDir, pSaveInfo->UTF8SaveFilename);
+    sprintf(fileName, "%s/%s", dirName, pSaveInfo->UTF8SaveTitle);
+    sprintf(thumbName, "%s/thumbnails/thumbData.png", dirName);
+
+    DeleteFileA(fileName);
+    DeleteFileA(thumbName);
+    RemoveDirectoryA(dirName);
+
+    PSAVE_INFO m_pDeleteInfo = pSaveInfo; // only here for consistency with the xbox one assert
+    assert((m_pDeleteInfo >= &m_pSaveDetails->SaveInfoA[0]) && (m_pDeleteInfo < &m_pSaveDetails->SaveInfoA[m_pSaveDetails->iSaveC]));
+
+    uint64_t index = pSaveInfo - this->m_pSaveDetails->SaveInfoA;
+
+    // shift all save data by 1 to fill the gap
+    for (int j = index; j < this->m_pSaveDetails->iSaveC - 1; ++j)
+    {
+        this->m_pSaveDetails->SaveInfoA[j] = this->m_pSaveDetails->SaveInfoA[j + 1];
+    }
+
+    --this->m_pSaveDetails->iSaveC;
+
+    // not calling this function is what caused the softlock in the original binaries
+    if (Func)
+    {
+        Func(lpParam, true);
+    }
+
     return C4JStorage::ESaveGame_Idle;
 }
 

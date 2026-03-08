@@ -35,8 +35,8 @@ public:
             ;
         }
 
-        std::string m_szDirectoryPath;
         std::string m_szMountPath;
+        std::string m_szDirectoryPath;
     };
 
     XCONTENT_DATA &GetDLC(DWORD dw);
@@ -72,7 +72,7 @@ public:
     LPVOID m_pMountedDLCParam;
     std::string m_szMountPath;
     DWORD m_uiCurrentMappedDLC;
-    DWORD dword94;
+    DWORD m_dwLicenseMask;
     char m_szPackageRoot[40];
     DWORD dwordC0;
     std::vector<DriveMapping> m_vDLCDriveMappings;
