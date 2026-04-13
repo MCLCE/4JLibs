@@ -428,12 +428,14 @@ FodyWeavers.xsd
 *.msp
 
 # special headers
-4J_Input.h
-4J_Storage.h
-4J_Render.h
-4J_Profile.h
+# Included for MCLCE Build
+#4J_Input.h
+#4J_Storage.h
+#4J_Render.h
+#4J_Profile.h
 
-extraX64.h
+#extraX64.h
+# End Included
 
 # generated shader headers
 VS_PF3_TF2_CB4_NB4_XW1.h
